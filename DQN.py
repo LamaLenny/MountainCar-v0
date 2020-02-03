@@ -22,9 +22,9 @@ class DQN:
         next_states = torch.from_numpy(np.array(next_states)).float().to(self.device)
         dones = torch.from_numpy(np.array(dones)).to(self.device).unsqueeze(1)
 
-        with torch.no_grad():
-            target = rewards + (self.GAMMA * self.target_network(next_states).detach().max(1)[0].unsqueeze(1)) * (
-                ~dones)
+        with torch.no_grad(): # Double DQN  
+            argmax = self.network(next_states).detach().max(1)[1].unsqueeze(1)
+            target = rewards + (GAMMA * self.target_network(next_states).detach().gather(1, argmax))*(~dones)
 
         Q_current = self.network(states).gather(1, actions)
         self.optimizer.zero_grad()
